@@ -39,8 +39,8 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
         SELECT COALESCE(SUM(b.seatsBooked), 0)
         FROM Booking b
         WHERE b.event.id = :eventId
-          AND b.status = :status
+          AND b.status = :bookingStatus
           AND b.deletedAt IS NULL
     """)
-    int sumSeatsByEventAndStatus(UUID eventId, BookingStatus bookingStatus);
+    Integer sumSeatsByEventAndStatus(UUID eventId, BookingStatus bookingStatus);
 }

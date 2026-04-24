@@ -34,11 +34,11 @@ public class SeatHoldService {
         Event event = eventRepository.findActiveByIdWithLock(request.getEventId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Event not found: " + request.getEventId()));
-
         // Prevent same user from holding seats multiple times for the same event
-        boolean alreadyHolding = seatHoldRepository.existsActiveHoldForUser(
+        Long activeHoldCount = seatHoldRepository.countActiveHoldsForUser(
                 request.getUserId(), event.getId(), HoldStatus.ACTIVE, LocalDateTime.now());
-        if (alreadyHolding) {
+
+        if (activeHoldCount != null && activeHoldCount > 0) {
             throw new DuplicateBookingException(
                     "You already have an active hold for this event. Please confirm or wait for it to expire.");
         }

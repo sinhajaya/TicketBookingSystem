@@ -14,5 +14,5 @@ import java.util.UUID;
 public class ConfirmBookingRequest {
 
     private UUID holdId;
-    private UUID UserId;
+    private UUID userId;
 }

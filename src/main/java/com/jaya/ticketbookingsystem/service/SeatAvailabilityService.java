@@ -21,13 +21,12 @@ public class SeatAvailabilityService {
      * Available = totalSeats - confirmed bookings - active (non-expired) holds
      * Called both on Event read and before creating a new hold.
      */
-    public int calculateAvailableSeats(UUID eventId, int totalSeats) {
-        int confirmedSeats = bookingRepository
+    public Integer calculateAvailableSeats(UUID eventId, Integer totalSeats) {
+        Integer confirmedSeats = bookingRepository
                 .sumSeatsByEventAndStatus(eventId, BookingStatus.CONFIRMED);
 
-        int heldSeats = seatHoldRepository
+        Integer heldSeats = seatHoldRepository
                 .sumActiveHeldSeats(eventId, HoldStatus.ACTIVE, LocalDateTime.now());
-
         return totalSeats - confirmedSeats - heldSeats;
     }
 }

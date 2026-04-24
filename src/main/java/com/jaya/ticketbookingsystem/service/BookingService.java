@@ -74,7 +74,7 @@ public class BookingService {
                 .status(BookingStatus.CONFIRMED)
                 .build();
 
-        Booking saved = bookingRepository.save(booking);
+        Booking saved = bookingRepository.saveAndFlush(booking);
         return toResponse(saved);
     }
 
