@@ -1,7 +1,9 @@
 package com.jaya.ticketbookingsystem.controller;
 
+import com.jaya.ticketbookingsystem.dto.AvailabilityResponse;
 import com.jaya.ticketbookingsystem.dto.CreateEventRequest;
 import com.jaya.ticketbookingsystem.dto.EventResponseDTO;
+import com.jaya.ticketbookingsystem.dto.UpdateEventRequest;
 import com.jaya.ticketbookingsystem.exception.ResourceNotFoundException;
 import com.jaya.ticketbookingsystem.service.EventService;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +35,14 @@ public class EventController {
 
     @PutMapping("/{id}")
     public ResponseEntity<EventResponseDTO> updateEvent(@PathVariable UUID id,
-                                                        @RequestBody CreateEventRequest request) throws ResourceNotFoundException {
+                                                        @RequestBody UpdateEventRequest request) throws ResourceNotFoundException {
         EventResponseDTO response= eventService.updateEvent(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/availability")
+    public ResponseEntity<AvailabilityResponse> getAvailability(@PathVariable UUID id) {
+        AvailabilityResponse response = eventService.getAvailability(id);
         return ResponseEntity.ok(response);
     }
 

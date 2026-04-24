@@ -1,10 +1,16 @@
 package com.jaya.ticketbookingsystem.service;
 
+import com.jaya.ticketbookingsystem.dto.AvailabilityResponse;
 import com.jaya.ticketbookingsystem.dto.CreateEventRequest;
 import com.jaya.ticketbookingsystem.dto.EventResponseDTO;
+import com.jaya.ticketbookingsystem.dto.UpdateEventRequest;
 import com.jaya.ticketbookingsystem.exception.ResourceNotFoundException;
+import com.jaya.ticketbookingsystem.model.BookingStatus;
 import com.jaya.ticketbookingsystem.model.Event;
+import com.jaya.ticketbookingsystem.model.HoldStatus;
+import com.jaya.ticketbookingsystem.repository.BookingRepository;
 import com.jaya.ticketbookingsystem.repository.EventRepository;
+import com.jaya.ticketbookingsystem.repository.SeatHoldRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +24,8 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final SeatAvailabilityService seatAvailabilityService;
+    private final BookingRepository bookingRepository;
+    private final SeatHoldRepository seatHoldRepository;
 
     @Transactional
     public EventResponseDTO createEvent(CreateEventRequest request){
@@ -39,7 +47,7 @@ public class EventService {
     }
 
     @Transactional
-    public EventResponseDTO updateEvent(UUID id, CreateEventRequest request) throws ResourceNotFoundException {
+    public EventResponseDTO updateEvent(UUID id, UpdateEventRequest request) throws ResourceNotFoundException {
         Event event = findActiveOrThrow(id);
 
         if(request.getName()!=null)
@@ -79,5 +87,34 @@ public class EventService {
                 .createdAt(event.getCreatedAt())
                 .updatedAt(event.getUpdatedAt())
                 .build();
+    }
+
+    public AvailabilityResponse getAvailabilityBreakdown(Event event) {
+        int confirmed = getConfirmedSeats(event.getId());
+        int held      = getHeldSeats(event.getId());
+        int available = event.getTotalSeats() - confirmed - held;
+
+        return AvailabilityResponse.builder()
+                .eventId(event.getId())
+                .eventName(event.getName())
+                .totalSeats(event.getTotalSeats())
+                .confirmedSeats(confirmed)
+                .heldSeats(held)
+                .availableSeats(available)
+                .build();
+    }
+
+    // --- Private helpers ---
+
+    private int getConfirmedSeats(UUID eventId) {
+        Integer confirmed = bookingRepository
+                .sumSeatsByEventAndStatus(eventId, BookingStatus.CONFIRMED);
+        return confirmed != null ? confirmed : 0;
+    }
+
+    private int getHeldSeats(UUID eventId) {
+        Integer held = seatHoldRepository
+                .sumActiveHeldSeats(eventId, HoldStatus.ACTIVE, LocalDateTime.now());
+        return held != null ? held : 0;
     }
 }
